@@ -1,19 +1,44 @@
 import axios from 'axios'
+import { useState } from 'react'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
-const date = new Date()
+  const [ naver, setNaver] = useState([])
+  const [ search, setSearch] = useState('')
+
+  const getKeyword = async () => {
+    const res = await axios('api/naver')
+    const data = await res.data
+    //console.log(res)
+    //console.log(data)
+    setNaver(data)
+  }
+
+  const submitSearch = async () => {
+    //console.log(search)
+    const res = await axios.post('api/naver', {
+      //body: search,
+      search,
+      headers: {
+        'Content-Type': 'application/json'
+      }, 
+    })
+    const data = await res.data
+    console.log(data)
+  }
 
   return (
-    <div className={styles.container}>날짜
+    <div className={styles.container}>
       <div>
-        <span>{date.getFullYear()}년 </span>
-        <span>{date.getMonth()+1}월 </span> 
-        <span>{date.getDate()}일 </span> 
-        <span>{date.getHours()}시 </span> 
-        <span>{date.getMinutes()}분 </span> 
-        <span>{date.getSeconds()}초</span>
+      <input type='text' value={search} placeholder='검색어를 입력하세요' 
+        onChange={(e)=>{
+          return (
+            setSearch(e.target.value)
+          )}} />
+      <button onClick={submitSearch}>Submit</button>
       </div>
+      <button onClick={getKeyword}>Load naver keyword</button>
+      {naver.map((naver)=>{return <div key={naver.id}>{naver.keyword}{naver.count}</div>})}
     </div>
   )
 }
