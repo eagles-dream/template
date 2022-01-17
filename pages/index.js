@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import styles from '../styles/Home.module.css'
 
-export default function Home({coupangData1, coupangData2, coupangData3, coupangData4}) {
+export default function Home({coupangData1, items, data}) {
   const start1 = coupangData1.indexOf("[")
   const end1 = coupangData1.indexOf("]", start1)
   const item1 = coupangData1.substring(start1+1, end1-1)  
@@ -12,7 +12,7 @@ export default function Home({coupangData1, coupangData2, coupangData3, coupangD
   const lists1End = lists1.slice(0, 10)
   //console.log(lists1End)
 
-  const start2 = coupangData2.indexOf("[")
+  /* const start2 = coupangData2.indexOf("[")
   const end2 = coupangData2.indexOf("]", start2)
   const item2 = coupangData2.substring(start2+1, end2-1)  
   const list2 = item2.split("},")
@@ -34,9 +34,9 @@ export default function Home({coupangData1, coupangData2, coupangData3, coupangD
   const list4 = item4.split("},")
   const lists4 = list4.map((a)=>{return a.concat("}")})
   const lists4End = lists4.slice(0, 10)
-  //console.log(lists4End)
+  //console.log(lists4End) */
 
-  const listsFinal = [...lists1End, ...lists2End, ...lists3End, ...lists4End]
+  const listsFinal = [...lists1End, /* ...lists2End, ...lists3End, ...lists4End */]
   //console.log(listsFinal[0])
 
   const shuffledListsFinal = listsFinal
@@ -47,13 +47,15 @@ export default function Home({coupangData1, coupangData2, coupangData3, coupangD
   const final = shuffledListsFinal.map((a)=>{return JSON.parse(a)})
   console.log(final)
 
+  let date = new Date()
+
   return (
     <div className={styles.container}>
-      <div className={styles.title}>인기쇼핑 TOP10</div>
+      <div className={styles.title}>쇼핑 TOP10</div>
       <div className={styles.list}>
         <div className={styles.left}>
         {
-          final.slice(0, 40).map((item, i)=>{ 
+          final.slice(0,3).map((item, i)=>{ 
             return (
               <a href={item.landingUrl} key={i} target="_blank" rel="noreferrer">
                 <div className={styles.news}>
@@ -69,23 +71,50 @@ export default function Home({coupangData1, coupangData2, coupangData3, coupangD
         }
         </div>
       </div>
+      <div>
+        <span>{date.getFullYear()}년 </span>
+        <span>{date.getMonth()+1}월 </span> 
+        <span>{date.getDate()}일 </span> 
+        <span>{date.getHours()}시 </span> 
+        <span>{date.getMinutes()}분 </span> 
+        <span>{date.getSeconds()}초</span>
+      </div>
     </div>
   )
 }
 
-export async function getServerSideProps() {  
-  const [coupangRes1, coupangRes2, coupangRes3, coupangRes4 ] = await Promise.all([
+/* export async function getServerSideProps() {  
+  const [coupangRes1, coupangRes2, coupangRes3, coupangRes4, itemsRes, dataRes] = await Promise.all([
     axios('https://ads-partners.coupang.com/widgets.html?id=548595&template=carousel&trackingCode=AF6264577&subId=&width=680&height=70'),
     axios('https://ads-partners.coupang.com/widgets.html?id=546675&template=carousel&trackingCode=AF6264577&subId=&width=680&height=70'),
     axios('https://ads-partners.coupang.com/widgets.html?id=548626&template=carousel&trackingCode=AF6264577&subId=&width=680&height=70'),
     axios('https://ads-partners.coupang.com/widgets.html?id=548627&template=carousel&trackingCode=AF6264577&subId=&width=680&height=70'),
+    axios('https://trends.google.co.kr/trends/trendingsearches/daily/rss?geo=KR'), 
+    axios('https://search.zum.com/issue.zum'),
   ])
-  const [coupangData1, coupangData2, coupangData3, coupangData4] = await Promise.all([
+  const [coupangData1, coupangData2, coupangData3, coupangData4, items, data] = await Promise.all([
     coupangRes1.data,
     coupangRes2.data,
     coupangRes3.data,
     coupangRes4.data,
+    JSON.parse(require("xml-js").xml2json(itemsRes.data)),
+    dataRes.data,
   ])
 
-  return { props: { coupangData1, coupangData2, coupangData3, coupangData4 } };
+  return { props: { coupangData1, coupangData2, coupangData3, coupangData4, items, data } };
+} */
+
+export async function getServerSideProps() {  
+  const [coupangRes1, itemsRes, dataRes] = await Promise.all([
+    axios('https://ads-partners.coupang.com/widgets.html?id=548595&template=carousel&trackingCode=AF6264577&subId=&width=680&height=70'),
+    axios('https://trends.google.co.kr/trends/trendingsearches/daily/rss?geo=KR'), 
+    axios('https://search.zum.com/issue.zum'),
+  ])
+  const [coupangData1, items, data] = await Promise.all([
+    coupangRes1.data,
+    JSON.parse(require("xml-js").xml2json(itemsRes.data)),
+    dataRes.data,
+  ])
+
+  return { props: { coupangData1, items, data } };
 }
