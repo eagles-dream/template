@@ -1,13 +1,14 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useReducer, useRef, useState } from 'react'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
   const [ naver, setNaver] = useState([])
   const [ search, setSearch] = useState('')
+  const searchRef = useRef()
 
   const getKeyword = async () => {
-    const res = await axios('api/naver')
+    const res = await axios.get('api/naver')
     const data = await res.data
     //console.log(res)
     //console.log(data)
@@ -17,7 +18,8 @@ export default function Home() {
   const submitSearch = async () => {
     //console.log(search)
     const res = await axios.post('api/naver', {
-      //body: search,
+      //method: 'POST',
+      search,
       search,
       headers: {
         'Content-Type': 'application/json'
@@ -30,10 +32,12 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div>
-      <input type='text' value={search} placeholder='검색어를 입력하세요' 
+      <input 
+        ref={searchRef} 
+        type='text' value={search} placeholder='검색어를 입력하세요' 
         onChange={(e)=>{
           return (
-            setSearch(e.target.value)
+            setSearch(searchRef.current.value)
           )}} />
       <button onClick={submitSearch}>Submit</button>
       </div>
